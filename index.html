@@ -1,0 +1,92 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Movie Stream</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 0; padding: 0; background: #111; color: #fff; }
+    header { padding: 1rem; text-align: center; background: #222; }
+    .movie-list { display: flex; flex-wrap: wrap; gap: 1rem; justify-content: center; padding: 1rem; }
+    .movie-card { background: #333; padding: 1rem; border-radius: 8px; width: 200px; text-align: center; }
+    .movie-card img { width: 100%; border-radius: 4px; }
+    .player-container { padding: 2rem; text-align: center; }
+    video { width: 90%; max-width: 800px; height: auto; margin-top: 1rem; }
+    select, button { margin-top: 1rem; padding: 0.5rem; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Movie Stream</h1>
+  </header>
+  <div class="movie-list" id="movieList"></div>
+  <div class="player-container" id="playerContainer" style="display:none;">
+    <h2 id="movieTitle"></h2>
+    <video id="videoPlayer" controls>
+      Your browser does not support HTML5 video.
+    </video>
+    <br />
+    <button onclick="addSubtitle()">إضافة الترجمة</button>
+    <input type="file" id="subtitleFile" style="display:none;" accept=".vtt,.srt" />
+  </div>
+
+  <script>
+    const movies = [
+      {
+        title: "Big Buck Bunny",
+        thumbnail: "https://peach.blender.org/wp-content/uploads/title_anouncement.jpg?x11217",
+        videoUrl: "https://download.blender.org/peach/bigbuckbunny_movies/BigBuckBunny_320x180.mp4"
+      },
+      {
+        title: "Sintel",
+        thumbnail: "https://upload.wikimedia.org/wikipedia/commons/7/75/Sintel_poster.jpg",
+        videoUrl: "https://download.blender.org/durian/movies/Sintel.2010.720p.mkv"
+      }
+    ];
+
+    const movieList = document.getElementById("movieList");
+    const playerContainer = document.getElementById("playerContainer");
+    const videoPlayer = document.getElementById("videoPlayer");
+    const movieTitle = document.getElementById("movieTitle");
+
+    movies.forEach((movie, index) => {
+      const card = document.createElement("div");
+      card.className = "movie-card";
+      card.innerHTML = `
+        <img src="${movie.thumbnail}" alt="${movie.title}" />
+        <h3>${movie.title}</h3>
+        <button onclick="playMovie(${index})">شاهد الآن</button>
+      `;
+      movieList.appendChild(card);
+    });
+
+    function playMovie(index) {
+      const movie = movies[index];
+      movieTitle.textContent = movie.title;
+      videoPlayer.src = movie.videoUrl;
+      videoPlayer.innerHTML = ''; // remove previous tracks
+      playerContainer.style.display = "block";
+      window.scrollTo(0, document.body.scrollHeight);
+    }
+
+    function addSubtitle() {
+      const input = document.getElementById("subtitleFile");
+      input.click();
+      input.onchange = () => {
+        const file = input.files[0];
+        if (file) {
+          const url = URL.createObjectURL(file);
+          const track = document.createElement("track");
+          track.kind = "subtitles";
+          track.label = "Arabic";
+          track.srclang = "ar";
+          track.src = url;
+          track.default = true;
+          videoPlayer.appendChild(track);
+        }
+      };
+    }
+  </script>
+</body>
+</html>
