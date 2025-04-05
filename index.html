@@ -1,92 +1,104 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Movie Stream</title>
+  <title>موقع مشاهدة أفلام</title>
   <style>
-    body { font-family: Arial, sans-serif; margin: 0; padding: 0; background: #111; color: #fff; }
-    header { padding: 1rem; text-align: center; background: #222; }
-    .movie-list { display: flex; flex-wrap: wrap; gap: 1rem; justify-content: center; padding: 1rem; }
-    .movie-card { background: #333; padding: 1rem; border-radius: 8px; width: 200px; text-align: center; }
-    .movie-card img { width: 100%; border-radius: 4px; }
-    .player-container { padding: 2rem; text-align: center; }
-    video { width: 90%; max-width: 800px; height: auto; margin-top: 1rem; }
-    select, button { margin-top: 1rem; padding: 0.5rem; }
+    body {
+      margin: 0;
+      background-color: #000;
+      color: #fff;
+      font-family: Arial, sans-serif;
+      padding: 20px;
+    }
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+    .title {
+      text-align: center;
+      margin-bottom: 30px;
+      font-size: 28px;
+    }
+    .movie-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+    .movie-card {
+      background-color: #111;
+      border-radius: 10px;
+      overflow: hidden;
+      cursor: pointer;
+      transition: transform 0.3s;
+    }
+    .movie-card:hover {
+      transform: scale(1.05);
+    }
+    .movie-card img {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+    .movie-card .movie-name {
+      text-align: center;
+      padding: 10px;
+    }
+    video {
+      width: 100%;
+      border-radius: 10px;
+      border: 2px solid #333;
+      display: none;
+    }
   </style>
 </head>
 <body>
-  <header>
-    <h1>Movie Stream</h1>
-  </header>
-  <div class="movie-list" id="movieList"></div>
-  <div class="player-container" id="playerContainer" style="display:none;">
-    <h2 id="movieTitle"></h2>
+  <div class="container">
+    <div class="title">مكتبة الأفلام</div>
+    <div class="movie-grid" id="movieGrid">
+      <div class="movie-card" data-src="https://www.youtube.com/watch?v=toeoZzWuCDI" data-sub="subtitles.vtt">
+        <img src="thumb1.jpg" alt="الفيلم 1">
+        <div class="movie-name">الفيلم 1</div>
+      </div>
+      <div class="movie-card" data-src="movie2.mp4" data-sub="subtitles2.vtt">
+        <img src="thumb2.jpg" alt="الفيلم 2">
+        <div class="movie-name">الفيلم 2</div>
+      </div>
+      <div class="movie-card" data-src="movie3.mp4" data-sub="subtitles3.vtt">
+        <img src="thumb3.jpg" alt="الفيلم 3">
+        <div class="movie-name">الفيلم 3</div>
+      </div>
+    </div>
+
     <video id="videoPlayer" controls>
-      Your browser does not support HTML5 video.
+      <source src="" type="video/mp4">
+      <track src="" kind="subtitles" srclang="ar" label="Arabic" default>
+      متصفحك لا يدعم عرض الفيديو.
     </video>
-    <br />
-    <button onclick="addSubtitle()">إضافة الترجمة</button>
-    <input type="file" id="subtitleFile" style="display:none;" accept=".vtt,.srt" />
   </div>
 
   <script>
-    const movies = [
-      {
-        title: "The Monkey",
-        thumbnail: "https://cnth2.shabakaty.com/vascin-poster-images/48226BBA-18F9-4FC8-00E2-A75309E5CF68_poster_medium_thumb.jpg",
-        videoUrl: "https://cdn.shabakaty.com/vascin24-mp4/0A06173C-3C65-9B25-7023-CEA7E0A64B68_video.mp4?response-content-disposition=attachment%3B%20filename%3D%22video.mp4%22&AWSAccessKeyId=PSFBSAZRKNBJOAMKHHBIBOBEONKBBOPKEDDBFBOJCH&Expires=1744307653&Signature=sbjsDtv05cdquxf%2F4RafNJPlfWA%3D"
-      },
-      {
-        title: "Sintel",
-        thumbnail: "https://upload.wikimedia.org/wikipedia/commons/7/75/Sintel_poster.jpg",
-        videoUrl: "https://download.blender.org/durian/movies/Sintel.2010.720p.mkv"
-      }
-    ];
+    const cards = document.querySelectorAll('.movie-card');
+    const video = document.getElementById('videoPlayer');
 
-    const movieList = document.getElementById("movieList");
-    const playerContainer = document.getElementById("playerContainer");
-    const videoPlayer = document.getElementById("videoPlayer");
-    const movieTitle = document.getElementById("movieTitle");
+    cards.forEach(card => {
+      card.addEventListener('click', () => {
+        const src = card.getAttribute('data-src');
+        const sub = card.getAttribute('data-sub');
 
-    movies.forEach((movie, index) => {
-      const card = document.createElement("div");
-      card.className = "movie-card";
-      card.innerHTML = `
-        <img src="${movie.thumbnail}" alt="${movie.title}" />
-        <h3>${movie.title}</h3>
-        <button onclick="playMovie(${index})">شاهد الآن</button>
-      `;
-      movieList.appendChild(card);
+        video.innerHTML = `
+          <source src="${src}" type="video/mp4">
+          <track src="${sub}" kind="subtitles" srclang="ar" label="Arabic" default>
+          متصفحك لا يدعم عرض الفيديو.
+        `;
+        video.style.display = 'block';
+        video.scrollIntoView({ behavior: 'smooth' });
+        video.load();
+        video.play();
+      });
     });
-
-    function playMovie(index) {
-      const movie = movies[index];
-      movieTitle.textContent = movie.title;
-      videoPlayer.src = movie.videoUrl;
-      videoPlayer.innerHTML = ''; // remove previous tracks
-      playerContainer.style.display = "block";
-      window.scrollTo(0, document.body.scrollHeight);
-    }
-
-    function addSubtitle() {
-      const input = document.getElementById("subtitleFile");
-      input.click();
-      input.onchange = () => {
-        const file = input.files[0];
-        if (file) {
-          const url = URL.createObjectURL(file);
-          const track = document.createElement("track");
-          track.kind = "subtitles";
-          track.label = "Arabic";
-          track.srclang = "ar";
-          track.src = url;
-          track.default = true;
-          videoPlayer.appendChild(track);
-        }
-      };
-    }
   </script>
 </body>
 </html>
