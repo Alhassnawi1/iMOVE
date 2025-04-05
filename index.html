@@ -2,145 +2,206 @@
 <!DOCTYPE html>
 <html lang="ar">
 <head>
-  <meta charset="UTF-8">
-  <title>الداوود للمشاهدة</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link href="https://vjs.zencdn.net/8.3.0/video-js.css" rel="stylesheet" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>مشاهدة القنوات</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: 'Segoe UI', sans-serif; background: #121212; color: white; display: flex; flex-direction: column; min-height: 100vh; }
-    header {
-      background: #1f1f1f;
-      padding: 15px 20px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-    }
-    header input {
-      padding: 8px 12px;
-      border-radius: 6px;
-      border: none;
-      width: 250px;
-    }
-    .content {
-      display: flex;
-      flex: 1;
-      overflow: hidden;
-    }
-    .sidebar {
-      width: 280px;
-      background: #1e1e1e;
-      overflow-y: auto;
-      padding: 20px;
-      border-left: 1px solid #333;
-    }
-    .category-title {
-      margin-top: 20px;
-      margin-bottom: 10px;
-      font-size: 18px;
-      border-bottom: 1px solid #444;
-      padding-bottom: 5px;
-    }
-    .channel {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 10px;
-      margin-bottom: 8px;
-      background-color: #2a2a2a;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: background 0.3s;
-    }
-    .channel img {
-      width: 36px;
-      height: 36px;
-      border-radius: 4px;
-    }
-    .channel:hover {
-      background-color: #444;
-    }
-    .channel.active {
-      background-color: #6200ea;
-    }
-    .main-content {
-      flex: 1;
-      padding: 20px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    .video-container {
-      width: 100%;
-      max-width: 960px;
-    }
-    .video-js { border-radius: 12px; overflow: hidden; }
-    @media (max-width: 768px) {
-      .content { flex-direction: column; }
-      .sidebar { width: 100%; height: auto; border-left: none; border-top: 1px solid #333; }
-    }
+    body { font-family: 'Tahoma', sans-serif; }
+    .hidden { display: none; }
+    .channel-thumbnail { width: 100%; border-radius: 0.5rem; }
   </style>
 </head>
-<body>
-  <header>
-    <h2>مشاهدة القنوات</h2>
-    <input type="text" id="searchInput" placeholder="ابحث عن قناة...">
-  </header>
-  <div class="content">
-    <div class="main-content">
-      <div class="video-container">
-        <video
-          id="livePlayer"
-          class="video-js vjs-default-skin"
-          controls
-          autoplay
-          width="100%"
-          height="540"
-          data-setup='{}'>
-          <source src="https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8" type="application/x-mpegURL" />
-          متصفحك لا يدعم تشغيل الفيديو
-        </video>
-      </div>
-    </div>
-    <div class="sidebar" id="channelList">
-      <div class="category-title">أخبار</div>
-      <div class="channel active" onclick="playChannel(this, 'https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8')">
-        <img src="https://upload.wikimedia.org/wikipedia/commons/5/5f/Al_Jazeera_English_logo_2012.svg">
-        <span>الجزيرة</span>
-      </div>
-      <div class="category-title">ترفيه</div>
-      <div class="channel" onclick="playChannel(this, 'https://stream.veo.buzz:6050/enter/ch18/ch18_720.m3u8')">
-        <img src="https://upload.wikimedia.org/wikipedia/ar/thumb/c/cc/Lbcsat96.jpg/120px-Lbcsat96.jpg">
-        <span>LBC</span>
- <div class="channel" onclick="playChannel(this, 'https://www.youtube.com/watch?v=82L-5rSpAQw')">
-        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/63/Karbala_tv.jpg/250px-Karbala_tv.jpg">
-        <span>كربلاء</span>
-      </div>
-      <div class="category-title">أفلام</div>
-      <div class="channel" onclick="playChannel(this, 'https://bitdash-a.akamaihd.net/content/sintel/hls/playlist.m3u8')">
-        <img src="https://upload.wikimedia.org/wikipedia/commons/1/1e/BeIN_Media_Group_logo.svg">
-        <span>beIN Movies</span>
-      </div>
+<body class="bg-gray-900 text-white">
+
+  <!-- شاشة تسجيل الدخول -->
+  <div id="loginScreen" class="fixed inset-0 bg-gray-900 flex items-center justify-center">
+    <div class="bg-gray-800 p-6 rounded-xl shadow-lg w-full max-w-sm">
+      <h2 class="text-xl font-bold mb-4 text-center">تسجيل الدخول</h2>
+      <input id="username" type="text" placeholder="اسم المستخدم" class="w-full p-2 mb-3 rounded bg-gray-700 border border-gray-600" />
+      <input id="password" type="password" placeholder="كلمة المرور" class="w-full p-2 mb-4 rounded bg-gray-700 border border-gray-600" />
+      <button onclick="login()" class="bg-blue-600 hover:bg-blue-700 w-full py-2 rounded">دخول</button>
     </div>
   </div>
-  <script src="https://vjs.zencdn.net/8.3.0/video.min.js"></script>
+
+  <!-- التطبيق الرئيسي -->
+  <div id="mainApp" class="hidden">
+
+    <header class="bg-gray-800 shadow-lg flex flex-col md:flex-row justify-between items-center px-6 py-4">
+      <h1 class="text-3xl font-bold">مشاهدة القنوات</h1>
+      <div class="flex gap-2 mt-4 md:mt-0">
+        <button onclick="toggleAdminPanel()" class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded">إدارة القنوات</button>
+        <button onclick="toggleUsersPanel()" class="bg-green-600 hover:bg-green-700 px-4 py-2 rounded">إدارة المستخدمين</button>
+      </div>
+    </header>
+
+    <div class="flex flex-col md:flex-row">
+      <!-- قائمة القنوات -->
+      <aside class="w-full md:w-1/4 bg-gray-800 p-4">
+        <h2 class="text-xl mb-4 border-b border-gray-600 pb-2">القنوات</h2>
+        <ul id="channelList" class="space-y-4"></ul>
+      </aside>
+
+      <!-- مشغل الفيديو -->
+      <main class="flex-1 p-4">
+        <div class="bg-black rounded overflow-hidden">
+          <video id="video" controls class="w-full h-96 bg-black"></video>
+        </div>
+      </main>
+    </div>
+
+    <!-- لوحة إدارة القنوات -->
+    <section id="adminPanel" class="hidden p-6 bg-gray-800">
+      <h2 class="text-2xl font-bold mb-4">إدارة القنوات</h2>
+      <div class="mb-6">
+        <input id="newName" type="text" placeholder="اسم القناة" class="p-2 w-full mb-2 rounded bg-gray-700 border border-gray-600" />
+        <input id="newURL" type="text" placeholder="رابط البث" class="p-2 w-full mb-2 rounded bg-gray-700 border border-gray-600" />
+        <input id="newThumbnail" type="text" placeholder="رابط الصورة المصغرة" class="p-2 w-full mb-2 rounded bg-gray-700 border border-gray-600" />
+        <button onclick="addChannel()" class="bg-green-600 hover:bg-green-700 px-4 py-2 rounded">إضافة قناة</button>
+      </div>
+      <div>
+        <table class="w-full text-right border border-gray-600">
+          <thead><tr class="bg-gray-700"><th class="p-2">الاسم</th><th class="p-2">الرابط</th><th class="p-2">صورة</th><th class="p-2">حذف</th></tr></thead>
+          <tbody id="adminTable"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- لوحة إدارة المستخدمين -->
+    <section id="usersPanel" class="hidden p-6 bg-gray-800">
+      <h2 class="text-2xl font-bold mb-4">إدارة المستخدمين</h2>
+      <div class="mb-6">
+        <input id="newUser" type="text" placeholder="اسم المستخدم" class="p-2 w-full mb-2 rounded bg-gray-700 border border-gray-600" />
+        <input id="newPass" type="text" placeholder="كلمة المرور" class="p-2 w-full mb-2 rounded bg-gray-700 border border-gray-600" />
+        <select id="newRole" class="p-2 w-full mb-2 rounded bg-gray-700 border border-gray-600">
+          <option value="user">مستخدم</option>
+          <option value="admin">مشرف</option>
+        </select>
+        <button onclick="addUser()" class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded">إضافة مستخدم</button>
+      </div>
+      <ul id="userList" class="space-y-2"></ul>
+    </section>
+  </div>
+
   <script>
-    const player = videojs('livePlayer');
-    function playChannel(element, url) {
-      player.src({ src: url, type: 'application/x-mpegURL' });
-      player.play();
-      document.querySelectorAll('.channel').forEach(el => el.classList.remove('active'));
-      element.classList.add('active');
+    const video = document.getElementById('video');
+    const users = [{ username: '1', password: '1', role: 'admin' }];
+    const channels = [];
+
+    let currentUser = null;
+
+    function login() {
+      const username = document.getElementById('username').value;
+      const password = document.getElementById('password').value;
+      const found = users.find(u => u.username === username && u.password === password);
+      if (found) {
+        currentUser = found;
+        document.getElementById('loginScreen').classList.add('hidden');
+        document.getElementById('mainApp').classList.remove('hidden');
+        renderChannels();
+        renderAdminTable();
+        renderUsers();
+      } else {
+        alert('بيانات الدخول غير صحيحة');
+      }
     }
-    document.getElementById('searchInput').addEventListener('input', function () {
-      const filter = this.value.toLowerCase();
-      const channels = document.querySelectorAll('.channel');
-      channels.forEach(channel => {
-        const name = channel.textContent.toLowerCase();
-        channel.style.display = name.includes(filter) ? 'flex' : 'none';
+
+    function playChannel(url) {
+      if (Hls.isSupported() && url.endsWith('.m3u8')) {
+        const hls = new Hls();
+        hls.loadSource(url);
+        hls.attachMedia(video);
+        hls.on(Hls.Events.MANIFEST_PARSED, function () {
+          video.play();
+        });
+      } else {
+        video.src = url;
+        video.play();
+      }
+    }
+
+    function renderChannels() {
+      const list = document.getElementById('channelList');
+      list.innerHTML = '';
+      channels.forEach((ch, i) => {
+        list.innerHTML += `
+          <li>
+            <img src="${ch.thumb}" class="channel-thumbnail mb-2" />
+            <button onclick="playChannel('${ch.url}')" class="block w-full text-right hover:underline">${ch.name}</button>
+          </li>
+        `;
       });
-    });
+    }
+
+    function toggleAdminPanel() {
+      if (currentUser?.role !== 'admin') return alert('غير مصرح لك');
+      document.getElementById('adminPanel').classList.toggle('hidden');
+      renderAdminTable();
+    }
+
+    function toggleUsersPanel() {
+      if (currentUser?.role !== 'admin') return alert('غير مصرح لك');
+      document.getElementById('usersPanel').classList.toggle('hidden');
+    }
+
+    function addChannel() {
+      if (currentUser?.role !== 'admin') return alert('غير مصرح لك');
+      const name = document.getElementById('newName').value.trim();
+      const url = document.getElementById('newURL').value.trim();
+      const thumb = document.getElementById('newThumbnail').value.trim();
+      if (name && url && thumb) {
+        channels.push({ name, url, thumb });
+        renderChannels();
+        renderAdminTable();
+      } else {
+        alert('يرجى تعبئة كل الحقول');
+      }
+    }
+
+    function renderAdminTable() {
+      const table = document.getElementById('adminTable');
+      table.innerHTML = '';
+      channels.forEach((ch, index) => {
+        table.innerHTML += `
+          <tr>
+            <td class="p-2 border">${ch.name}</td>
+            <td class="p-2 border">${ch.url}</td>
+            <td class="p-2 border"><img src="${ch.thumb}" width="60" /></td>
+            <td class="p-2 border"><button onclick="deleteChannel(${index})" class="text-red-500 hover:underline">حذف</button></td>
+          </tr>
+        `;
+      });
+    }
+
+    function deleteChannel(index) {
+      if (currentUser?.role !== 'admin') return alert('غير مصرح لك');
+      if (confirm('هل تريد حذف القناة؟')) {
+        channels.splice(index, 1);
+        renderChannels();
+        renderAdminTable();
+      }
+    }
+
+    function addUser() {
+      const username = document.getElementById('newUser').value.trim();
+      const password = document.getElementById('newPass').value.trim();
+      const role = document.getElementById('newRole').value;
+      if (username && password && role) {
+        users.push({ username, password, role });
+        renderUsers();
+      } else {
+        alert('يرجى تعبئة كل الحقول');
+      }
+    }
+
+    function renderUsers() {
+      const list = document.getElementById('userList');
+      list.innerHTML = '';
+      users.forEach(user => {
+        list.innerHTML += `<li>${user.username} - <span class="text-sm text-gray-300">${user.role}</span></li>`;
+      });
+    }
   </script>
 </body>
 </html>
